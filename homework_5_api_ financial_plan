@@ -1,0 +1,1353 @@
+Unit 5 - Financial Planning
+[1]:
+
+# Initial imports
+import os
+import requests
+import pandas as pd
+from dotenv import load_dotenv
+import alpaca_trade_api as tradeapi
+from MCForecastTools import MCSimulation
+​
+%matplotlib inline
+[2]:
+
+# Load .env enviroment variables
+load_dotenv()
+[2]:
+True
+Part 1 - Personal Finance Planner
+Collect Crypto Prices Using the requests Library
+[1]:
+
+# Set current amount of crypto assets
+my_btc = 1.2
+my_eth = 5.3
+​
+crypto_prices = requests
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_28553/458210099.py in <module>
+      2 # YOUR CODE HERE!
+      3 
+----> 4 crypto_prices = requests.plot
+
+NameError: name 'requests' is not defined
+[4]:
+
+# Crypto API URLs
+btc_url = "https://api.alternative.me/v2/ticker/Bitcoin/?convert=USD"
+eth_url = "https://api.alternative.me/v2/ticker/Ethereum/?convert=USD"
+[5]:
+
+# Fetch current BTC price
+btc_response = requests.get(btc_url).json()
+btc_price = btc_response['data']['1']['qoutes']['USD']['price']
+​
+# Fetch current ETH price
+btc_response = requests.get(eth_url).json()
+btc_price = btc_response['data']['1027']['qoutes']['USD']['price']
+​
+​
+# Compute current value of my crpto
+my_btc_value = my_btc * btc_price
+my_eth_value = my_eth * eth_price
+​
+# Print current crypto wallet balance
+print(f"The current value of your {my_btc} BTC is ${my_btc_value:0.2f}")
+print(f"The current value of your {my_eth} ETH is ${my_eth_value:0.2f}")
+The current value of your 1.2 BTC is $84236.41
+The current value of your 5.3 ETH is $22171.16
+Collect Investments Data Using Alpaca: SPY (stocks) and AGG (bonds)
+[6]:
+
+# Set current amount of shares
+my_agg = 200
+my_spy = 50
+my_appl = 144
+my_googl = 99
+[7]:
+
+# Set Alpaca API key and secret
+alpaca_api_key = 'PK8NVTHRKHII5QQRCYFA'
+alpaca_secret_key = 'qsSZZEheFCFg7CZm8H1b3gex7313OoPg9Sl5cGxz'
+​
+# Create the Alpaca API object
+api = tradeapi.REST(
+    alpaca_api_key,
+    alpaca_secret_key,
+    api_version='v2')
+[8]:
+
+# Format current date as ISO format
+today = pd.Timestamp('2020-05-01', tz='America/New_York').isoformat()
+​
+# Set the tickers
+tickers = ["AGG", "SPY", "APPL", "GOOGL"]
+​
+# Set timeframe to "1Day" for Alpaca API
+timeframe = "1Day"
+​
+# Get current closing prices for SPY and AGG
+df_investments = api.get_bars(
+    tickers,
+    timeframe,
+    start = today
+).df
+​
+# Reorganize the DataFrame
+# Separate ticker data
+AGG = df_investments[df_investments['symbol']=='AGG'].drop('symbol', axis=1)
+Spy = df_investments[df_investments['symbol']=='SPY'].drop('symbol', axis=1)
+APPL = df_investments[df_investments['symbol']=='APPL'].drop('symbol', axis=1)
+GOOGL = df_investments[df_investments['symbol']=='GOOGL'].drop('symbol', axis=1)
+​
+# Concatenate the ticker DataFrames
+df_investments = pd.concat([ AGG, SPY, APPL, GOOGL], axis=1, keys=['AGG', 'SPY', 'APPL', 'GOOGL'])
+​
+# Preview DataFrame
+df_investments.head()
+[8]:
+AGG	SPY
+open	high	low	close	volume	open	high	low	close	volume
+time										
+2020-05-01 00:00:00-04:00	116.97	117.0998	116.6775	116.900	11778582	285.31	290.6572	281.52	282.73	111321036
+2020-05-04 00:00:00-04:00	116.89	117.0900	116.8700	116.975	6950122	280.74	283.9000	279.13	283.66	70199660
+2020-05-05 00:00:00-04:00	116.96	116.9700	116.8100	116.880	7315932	286.64	289.2500	285.75	286.22	72232658
+2020-05-06 00:00:00-04:00	116.44	116.7100	116.3000	116.450	9313368	288.04	288.4600	283.78	284.29	65371977
+2020-05-07 00:00:00-04:00	116.61	116.7600	116.4200	116.730	7338194	287.75	289.7800	287.13	287.70	68883538
+[9]:
+
+# Pick AGG and SPY close prices
+agg_close_price = float(df_investments ['AGG']['close'][0])
+spy_close_price = float(df_investments ['SPY']['close'][0])
+appl_close_price = float(df_investments ['APPL']['close'][0])
+googl_close_price = float(df_investments ['GOOGL']['close'][0])
+​
+​
+# Print AGG and SPY close prices
+print(f"Current AGG closing price: ${agg_close_price}")
+print(f"Current SPY closing price: ${spy_close_price}")
+print(f"Current APPL closing price: ${appl_close_price}")
+print(f"Current GOOGL closing price: ${googl_close_price}")
+​
+​
+​
+Current AGG closing price: $116.9
+Current SPY closing price: $282.73
+[10]:
+
+# Compute the current value of shares
+my_spy_value = my_spy * spy_close _price
+my_agg_value = my_spy * agg_close _price
+my_appl_value = my_spy * appl_close _price
+my_googl_value = my_spy * googl_close _price
+# Print current value of shares
+print(f"The current value of your {my_spy} SPY shares is ${my_spy_value:0.2f}")
+print(f"The current value of your {my_agg} AGG shares is ${my_agg_value:0.2f}")
+print(f"The current value of your {my_appl} APPL shares is ${my_appl_value:0.2f}")
+print(f"The current value of your {my_googl} GOOGL shares is ${my_googl_value:0.2f}")
+The current value of your 50 SPY shares is $14136.50
+The current value of your 200 AGG shares is $23380.00
+Savings Health Analysis
+[11]:
+
+# Set monthly household income
+monthly_income = 12000
+​
+# Consolidate financial assets data
+savings_data = [
+    my_btc_value + my_eth_value,
+    my_spy_value + my_agg_value,
+]
+​
+# Create savings DataFrame
+df_savings = pd.DataFrame(savings_data, columns= ['amount'], index=['crypto','sharees'])
+​
+# Display savings DataFrame
+display(df_savings)
+amount
+crypto	106407.569394
+shares	37516.500000
+[12]:
+
+# Plot savings pie chart
+df_savings.plot.pie(y='amount' , title='compsition of Personal Savings')
+[12]:
+<AxesSubplot:title={'center':'Composition of Personal Savings'}, ylabel='amount'>
+
+[13]:
+
+# Set ideal emergency fund
+emergency_fund = monthly_income * 3
+​
+# Calculate total amount of savings
+total_savings = float(df_savings.sum())
+​
+# Validate saving health
+if total_savings > emergency_fund:
+    print('COngratulations! You Have enough money in your emergency fund. ')
+elif total_savings == emergncy_fund:
+    print('Great, You have saved three times your monthly expenses! keep pushing to increase your savings. ')
+else: 
+    print(f' You are ${(emergcy_fund - total_savings):0.2f} away from your emergency fund goat, continue savings between 10% and 20% of your monthly income to reach your goal.')
+Congratulations! You have enough money in your emergency fund.
+Part 2 - Retirement Planning
+
+Monte Carlo Simulation
+[14]:
+
+# Set start and end dates of five years back from today.
+# Sample results may vary from the solution based on the time frame chosen
+start_date = pd.Timestamp('2016-05-01', tz='America/New_York').isoformat()
+end_date = pd.Timestamp('2021-05-01', tz='America/New_York').isoformat()
+[15]:
+
+# Get 5 years' worth of historical data for SPY and AGG
+df_stock_data = alpac.get_bars(
+    tickers,
+    timeframe,
+​
+# Reorganize the DataFrame
+# Separate ticker data
+# YOUR CODE HERE!
+​
+​
+# Concatenate the ticker DataFrames
+# YOUR CODE HERE!
+​
+# Display sample data
+df_stock_data.head()
+[15]:
+AGG	SPY
+open	high	low	close	volume	open	high	low	close	volume
+time										
+2017-05-10 00:00:00-04:00	108.60	108.660	108.4400	108.520	1427511.0	NaN	NaN	NaN	NaN	NaN
+2017-05-11 00:00:00-04:00	108.35	108.540	108.3435	108.515	1773499.0	239.35	239.57	238.13	239.410	45435690.0
+2017-05-12 00:00:00-04:00	108.81	108.940	108.7800	108.920	1136553.0	239.09	239.21	238.67	239.030	35283567.0
+2017-05-15 00:00:00-04:00	108.85	108.940	108.8200	108.890	1620264.0	239.47	240.44	239.45	240.245	42230620.0
+2017-05-16 00:00:00-04:00	108.88	109.101	108.8800	109.000	1394153.0	240.62	240.67	239.63	240.100	37206183.0
+[16]:
+
+# Configuring a Monte Carlo simulation to forecast 30 years cumulative returns
+# YOUR CODE HERE!
+[17]:
+
+# Printing the simulation input data
+# YOUR CODE HERE!
+[17]:
+AGG	SPY
+open	high	low	close	volume	daily_return	open	high	low	close	volume	daily_return
+time												
+2017-05-10 00:00:00-04:00	108.60	108.660	108.4400	108.520	1427511.0	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+2017-05-11 00:00:00-04:00	108.35	108.540	108.3435	108.515	1773499.0	-0.000046	239.35	239.57	238.13	239.410	45435690.0	NaN
+2017-05-12 00:00:00-04:00	108.81	108.940	108.7800	108.920	1136553.0	0.003732	239.09	239.21	238.67	239.030	35283567.0	-0.001587
+2017-05-15 00:00:00-04:00	108.85	108.940	108.8200	108.890	1620264.0	-0.000275	239.47	240.44	239.45	240.245	42230620.0	0.005083
+2017-05-16 00:00:00-04:00	108.88	109.101	108.8800	109.000	1394153.0	0.001010	240.62	240.67	239.63	240.100	37206183.0	-0.000604
+[18]:
+
+# Running a Monte Carlo simulation to forecast 30 years cumulative returns
+# YOUR CODE HERE!
+Running Monte Carlo simulation number 0.
+Running Monte Carlo simulation number 10.
+Running Monte Carlo simulation number 20.
+Running Monte Carlo simulation number 30.
+Running Monte Carlo simulation number 40.
+Running Monte Carlo simulation number 50.
+Running Monte Carlo simulation number 60.
+Running Monte Carlo simulation number 70.
+Running Monte Carlo simulation number 80.
+Running Monte Carlo simulation number 90.
+Running Monte Carlo simulation number 100.
+Running Monte Carlo simulation number 110.
+Running Monte Carlo simulation number 120.
+Running Monte Carlo simulation number 130.
+Running Monte Carlo simulation number 140.
+Running Monte Carlo simulation number 150.
+Running Monte Carlo simulation number 160.
+Running Monte Carlo simulation number 170.
+Running Monte Carlo simulation number 180.
+Running Monte Carlo simulation number 190.
+Running Monte Carlo simulation number 200.
+Running Monte Carlo simulation number 210.
+Running Monte Carlo simulation number 220.
+Running Monte Carlo simulation number 230.
+Running Monte Carlo simulation number 240.
+Running Monte Carlo simulation number 250.
+Running Monte Carlo simulation number 260.
+Running Monte Carlo simulation number 270.
+Running Monte Carlo simulation number 280.
+Running Monte Carlo simulation number 290.
+Running Monte Carlo simulation number 300.
+Running Monte Carlo simulation number 310.
+Running Monte Carlo simulation number 320.
+Running Monte Carlo simulation number 330.
+Running Monte Carlo simulation number 340.
+Running Monte Carlo simulation number 350.
+Running Monte Carlo simulation number 360.
+Running Monte Carlo simulation number 370.
+Running Monte Carlo simulation number 380.
+Running Monte Carlo simulation number 390.
+Running Monte Carlo simulation number 400.
+Running Monte Carlo simulation number 410.
+Running Monte Carlo simulation number 420.
+Running Monte Carlo simulation number 430.
+Running Monte Carlo simulation number 440.
+Running Monte Carlo simulation number 450.
+Running Monte Carlo simulation number 460.
+Running Monte Carlo simulation number 470.
+Running Monte Carlo simulation number 480.
+Running Monte Carlo simulation number 490.
+[18]:
+0	1	2	3	4	5	6	7	8	9	...	490	491	492	493	494	495	496	497	498	499
+0	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	...	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000
+1	1.009035	1.019800	1.007274	0.993537	0.999989	1.006793	0.987234	0.991026	0.999287	0.989965	...	1.008802	0.990631	0.998367	0.996306	1.005638	0.999298	1.003740	0.995918	0.997987	0.987705
+2	1.015749	1.016643	1.021442	0.987915	1.000572	1.007587	0.989688	0.995665	1.004104	0.985250	...	1.010723	0.982956	0.998577	0.981389	1.018035	1.000601	1.002730	0.980490	1.011566	0.984374
+3	0.991994	1.011483	1.030600	0.997095	0.997604	1.005709	0.994743	0.997920	0.994627	0.997900	...	1.012315	0.989154	0.981850	0.971472	1.006515	1.002006	1.004207	0.984857	1.011721	0.987595
+4	0.987360	1.008866	1.034499	1.000035	0.996255	1.003667	0.994341	0.979276	0.999065	0.996478	...	1.016074	0.968970	0.987125	0.972621	1.010508	1.005873	1.004374	0.987862	1.008460	1.000726
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+7556	15.161399	13.710953	7.014478	13.250531	17.253323	6.504709	17.273753	8.488013	10.957276	13.189109	...	8.223420	12.288181	12.515016	19.375254	10.173651	22.237832	29.862674	5.580458	13.105158	4.897044
+7557	15.177512	13.738440	7.043751	13.102212	17.417942	6.477584	17.095762	8.496915	10.990621	12.939785	...	8.340971	12.323093	12.494097	19.483966	10.183564	22.458175	30.326832	5.621498	12.995128	4.964084
+7558	15.330981	13.708830	7.038211	13.151718	17.470599	6.487290	16.977758	8.420851	10.888101	13.032973	...	8.363106	12.358473	12.505053	19.621043	10.328272	22.774489	30.055585	5.658289	13.078240	4.966424
+7559	15.247704	13.672925	7.101012	13.252124	17.570481	6.403013	17.077302	8.521628	10.773828	12.927884	...	8.216022	12.349652	12.489294	19.596308	10.443810	22.852504	30.026844	5.669949	13.204933	4.931674
+7560	15.231193	13.684642	7.018139	13.401250	17.555389	6.386815	17.200155	8.572956	10.667610	12.982949	...	8.269920	12.363896	12.494857	19.704142	10.440594	22.806867	30.199049	5.665611	13.287779	4.974185
+7561 rows × 500 columns
+
+[19]:
+
+# Plot simulation outcomes
+# YOUR CODE HERE!
+
+[20]:
+
+# Plot probability distribution and confidence intervals
+# YOUR CODE HERE!
+
+Retirement Analysis
+[21]:
+
+# Fetch summary statistics from the Monte Carlo simulation results
+# YOUR CODE HERE!
+​
+# Print summary statistics
+# YOUR CODE HERE!
+count           500.000000
+mean             22.130012
+std              16.088798
+min               2.342293
+25%              10.465170
+50%              17.476764
+75%              29.550007
+max             104.663919
+95% CI Lower      4.779747
+95% CI Upper     64.053604
+Name: 7560, dtype: float64
+Calculate the expected portfolio return at the 95% lower and upper confidence intervals based on a $20,000 initial investment.
+[22]:
+
+# Set initial investment
+initial_investment = 20000
+​
+# Use the lower and upper `95%` confidence intervals to calculate the range of the possible outcomes of our $20,000
+# YOUR CODE HERE!
+​
+# Print results
+print(f"There is a 95% chance that an initial investment of ${initial_investment} in the portfolio"
+      f" over the next 30 years will end within in the range of"
+      f" ${ci_lower} and ${ci_upper}")
+There is a 95% chance that an initial investment of $20000 in the portfolio over the next 30 years will end within in the range of $95594.94 and $1281072.08
+Calculate the expected portfolio return at the 95% lower and upper confidence intervals based on a 50% increase in the initial investment.
+[23]:
+
+# Set initial investment
+initial_investment = 20000 * 1.5
+​
+# Use the lower and upper `95%` confidence intervals to calculate the range of the possible outcomes of our $30,000
+# YOUR CODE HERE!
+​
+# Print results
+print(f"There is a 95% chance that an initial investment of ${initial_investment} in the portfolio"
+      f" over the next 30 years will end within in the range of"
+      f" ${ci_lower} and ${ci_upper}")
+There is a 95% chance that an initial investment of $30000.0 in the portfolio over the next 30 years will end within in the range of $143392.41 and $1921608.12
+Optional Challenge - Early Retirement
+
+Five Years Retirement Option
+[24]:
+
+# Configuring a Monte Carlo simulation to forecast 5 years cumulative returns
+# YOUR CODE HERE!
+[25]:
+
+# Running a Monte Carlo simulation to forecast 5 years cumulative returns
+# YOUR CODE HERE!
+Running Monte Carlo simulation number 0.
+Running Monte Carlo simulation number 10.
+Running Monte Carlo simulation number 20.
+Running Monte Carlo simulation number 30.
+Running Monte Carlo simulation number 40.
+Running Monte Carlo simulation number 50.
+Running Monte Carlo simulation number 60.
+Running Monte Carlo simulation number 70.
+Running Monte Carlo simulation number 80.
+Running Monte Carlo simulation number 90.
+Running Monte Carlo simulation number 100.
+Running Monte Carlo simulation number 110.
+Running Monte Carlo simulation number 120.
+Running Monte Carlo simulation number 130.
+Running Monte Carlo simulation number 140.
+Running Monte Carlo simulation number 150.
+Running Monte Carlo simulation number 160.
+Running Monte Carlo simulation number 170.
+Running Monte Carlo simulation number 180.
+Running Monte Carlo simulation number 190.
+Running Monte Carlo simulation number 200.
+Running Monte Carlo simulation number 210.
+Running Monte Carlo simulation number 220.
+Running Monte Carlo simulation number 230.
+Running Monte Carlo simulation number 240.
+Running Monte Carlo simulation number 250.
+Running Monte Carlo simulation number 260.
+Running Monte Carlo simulation number 270.
+Running Monte Carlo simulation number 280.
+Running Monte Carlo simulation number 290.
+Running Monte Carlo simulation number 300.
+Running Monte Carlo simulation number 310.
+Running Monte Carlo simulation number 320.
+Running Monte Carlo simulation number 330.
+Running Monte Carlo simulation number 340.
+Running Monte Carlo simulation number 350.
+Running Monte Carlo simulation number 360.
+Running Monte Carlo simulation number 370.
+Running Monte Carlo simulation number 380.
+Running Monte Carlo simulation number 390.
+Running Monte Carlo simulation number 400.
+Running Monte Carlo simulation number 410.
+Running Monte Carlo simulation number 420.
+Running Monte Carlo simulation number 430.
+Running Monte Carlo simulation number 440.
+Running Monte Carlo simulation number 450.
+Running Monte Carlo simulation number 460.
+Running Monte Carlo simulation number 470.
+Running Monte Carlo simulation number 480.
+Running Monte Carlo simulation number 490.
+[25]:
+0	1	2	3	4	5	6	7	8	9	...	490	491	492	493	494	495	496	497	498	499
+0	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	...	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000
+1	1.001799	1.000245	1.006243	0.995742	1.003219	0.998395	0.997985	1.004253	1.002497	0.998947	...	1.007121	1.004291	1.000334	1.000876	0.998973	1.001375	0.996477	1.002103	1.005063	0.995521
+2	0.998289	1.000243	1.004284	0.996554	1.004502	0.993317	0.996037	1.010316	1.000850	0.996382	...	1.007016	1.003709	0.999542	1.001450	1.004142	1.004022	0.996702	1.004359	1.009205	0.999000
+3	1.002639	0.997279	1.008339	0.992870	0.998657	0.989041	0.994189	1.010062	0.999200	0.999132	...	1.004156	1.002288	1.003976	0.994908	1.008989	1.004545	0.995074	1.010488	1.011124	1.002626
+4	1.008853	0.996292	1.002813	0.995244	0.996794	0.990576	0.999322	1.010897	0.989222	0.995257	...	1.000057	1.007349	1.006909	0.990823	1.013085	1.002427	0.996293	1.007081	1.010369	0.998654
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+1256	1.438618	0.926659	1.048662	1.101424	1.134443	1.200987	1.347489	1.257520	1.428939	1.194429	...	1.104654	1.273680	1.276718	1.297344	1.229379	1.295593	1.501864	1.198438	1.386161	1.426163
+1257	1.441785	0.926428	1.048574	1.104941	1.137374	1.204559	1.360843	1.260661	1.429710	1.201055	...	1.107447	1.269262	1.265880	1.296800	1.227049	1.297884	1.510874	1.190802	1.388448	1.427391
+1258	1.444675	0.931714	1.053040	1.110206	1.140592	1.199869	1.358605	1.254728	1.426409	1.207420	...	1.101690	1.274683	1.281527	1.303255	1.227517	1.294870	1.503567	1.191945	1.388434	1.441467
+1259	1.443488	0.934065	1.049921	1.108998	1.142538	1.203844	1.363563	1.254192	1.425030	1.213366	...	1.103902	1.276629	1.275813	1.296929	1.222773	1.285521	1.498580	1.192940	1.397786	1.440244
+1260	1.446922	0.937697	1.053247	1.107388	1.138983	1.208412	1.364558	1.243754	1.426672	1.217407	...	1.103926	1.274986	1.281369	1.300069	1.223388	1.283023	1.500150	1.190080	1.398720	1.443262
+1261 rows × 500 columns
+
+[26]:
+
+# Plot simulation outcomes
+line_plot_five = MC_five_year.plot_simulation()
+
+[27]:
+
+# Plot probability distribution and confidence intervals
+dist_plot_five = MC_five_year.plot_distribution()
+
+[28]:
+
+# Fetch summary statistics from the Monte Carlo simulation results
+tbl_five = MC_five_year.sumarize_comulative_return()
+​
+# Print summary statistics
+print(tbl_five)
+count           500.000000
+mean              1.245905
+std               0.160008
+min               0.771559
+25%               1.140795
+50%               1.232555
+75%               1.352284
+max               1.733421
+95% CI Lower      0.951523
+95% CI Upper      1.586592
+Name: 1260, dtype: float64
+[29]:
+
+# Set initial investment
+initial_investment = 20000 *3
+​
+# Use the lower and upper `95%` confidence intervals to calculate the range of the possible outcomes of our $60,000
+ci_lower_ten = round(tbl_ten[8] * initial_investment,2)
+ci_upper_ten = round(tbl_ten[9] * initial_investment,2)
+​
+# Print results
+print(f"There is a 95% chance that an initial investment of ${initial_investment} in the portfolio"
+      f" over the next 5 years will end within in the range of"
+      f" ${ci_lower_five} and ${ci_upper_five}")
+There is a 95% chance that an initial investment of $60000 in the portfolio over the next 5 years will end within in the range of $57091.37 and $95195.55
+Ten Years Retirement Option
+[30]:
+
+# Configuring a Monte Carlo simulation to forecast 10 years cumulative returns
+MC_ten_year = MCSinmulation(
+    portfolio_data = df_stock_data,
+    weights = [.80,.20],
+    num_simulation = 500,
+    num_trading_days = 252*10
+)
+[31]:
+
+# Running a Monte Carlo simulation to forecast 10 years cumulative returns
+MC_ten_year.calc_comulative_return()
+Running Monte Carlo simulation number 0.
+Running Monte Carlo simulation number 10.
+Running Monte Carlo simulation number 20.
+Running Monte Carlo simulation number 30.
+Running Monte Carlo simulation number 40.
+Running Monte Carlo simulation number 50.
+Running Monte Carlo simulation number 60.
+Running Monte Carlo simulation number 70.
+Running Monte Carlo simulation number 80.
+Running Monte Carlo simulation number 90.
+Running Monte Carlo simulation number 100.
+Running Monte Carlo simulation number 110.
+Running Monte Carlo simulation number 120.
+Running Monte Carlo simulation number 130.
+Running Monte Carlo simulation number 140.
+Running Monte Carlo simulation number 150.
+Running Monte Carlo simulation number 160.
+Running Monte Carlo simulation number 170.
+Running Monte Carlo simulation number 180.
+Running Monte Carlo simulation number 190.
+Running Monte Carlo simulation number 200.
+Running Monte Carlo simulation number 210.
+Running Monte Carlo simulation number 220.
+Running Monte Carlo simulation number 230.
+Running Monte Carlo simulation number 240.
+Running Monte Carlo simulation number 250.
+Running Monte Carlo simulation number 260.
+Running Monte Carlo simulation number 270.
+Running Monte Carlo simulation number 280.
+Running Monte Carlo simulation number 290.
+Running Monte Carlo simulation number 300.
+Running Monte Carlo simulation number 310.
+Running Monte Carlo simulation number 320.
+Running Monte Carlo simulation number 330.
+Running Monte Carlo simulation number 340.
+Running Monte Carlo simulation number 350.
+Running Monte Carlo simulation number 360.
+Running Monte Carlo simulation number 370.
+Running Monte Carlo simulation number 380.
+Running Monte Carlo simulation number 390.
+Running Monte Carlo simulation number 400.
+Running Monte Carlo simulation number 410.
+Running Monte Carlo simulation number 420.
+Running Monte Carlo simulation number 430.
+Running Monte Carlo simulation number 440.
+Running Monte Carlo simulation number 450.
+Running Monte Carlo simulation number 460.
+Running Monte Carlo simulation number 470.
+Running Monte Carlo simulation number 480.
+Running Monte Carlo simulation number 490.
+[31]:
+0	1	2	3	4	5	6	7	8	9	...	490	491	492	493	494	495	496	497	498	499
+0	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	...	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000	1.000000
+1	1.004461	1.003269	0.998934	0.996767	1.000906	0.999279	0.995262	1.005752	0.993466	0.993655	...	1.001427	1.004350	0.996932	0.996844	0.997507	1.003457	0.998736	1.001195	0.999904	1.010218
+2	1.007901	1.003304	0.993812	0.999973	1.000910	1.002347	0.996311	1.007234	0.993550	0.991021	...	0.997379	1.001952	0.998124	0.998063	1.001733	1.000273	0.994865	1.000109	0.994648	1.007838
+3	1.007532	1.001077	0.990963	0.998339	1.001779	1.003653	0.994439	1.012230	0.999170	0.996484	...	0.995265	1.001745	0.995332	1.003023	1.003800	0.999755	0.997616	1.004730	0.993391	1.010444
+4	1.020339	1.005743	0.991869	0.998218	1.005630	1.008717	0.987764	1.012750	0.999227	0.996474	...	0.999028	1.004730	0.995357	1.000204	1.008738	0.999273	0.999426	1.003776	0.991478	1.013379
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+2516	1.616922	1.761703	1.143430	1.687801	1.743826	1.174891	1.514199	2.447129	1.589765	1.570578	...	1.316494	1.863650	1.727959	1.411033	1.804671	1.500605	1.413278	1.552375	1.318340	1.960015
+2517	1.620285	1.769184	1.145132	1.695693	1.742878	1.175745	1.517697	2.441471	1.586174	1.560826	...	1.318463	1.857860	1.724003	1.409092	1.810136	1.499466	1.413210	1.552539	1.316872	1.956776
+2518	1.622141	1.771927	1.149019	1.691589	1.739420	1.178965	1.522624	2.444413	1.580680	1.566154	...	1.317147	1.864694	1.727503	1.419561	1.821212	1.492831	1.412283	1.556659	1.318842	1.961271
+2519	1.628885	1.770207	1.149670	1.703935	1.738053	1.182429	1.519485	2.441360	1.565663	1.576607	...	1.307985	1.858986	1.728039	1.430017	1.814690	1.496851	1.409284	1.562660	1.324798	1.964190
+2520	1.631015	1.770072	1.155133	1.716156	1.740688	1.184901	1.523516	2.451787	1.565796	1.574713	...	1.302946	1.855886	1.730849	1.424173	1.818980	1.496972	1.412152	1.565199	1.320461	1.969683
+2521 rows × 500 columns
+
+[32]:
+
+# Plot simulation outcomes
+line_pllot_five = MC_five_year.plot_simulation()
+
+[33]:
+
+# Plot probability distribution and confidence intervals
+dist_plot_five = MC_five_year.plot_distribution()
+
+[34]:
+
+# Fetch summary statistics from the Monte Carlo simulation results
+tbl_ten = MC_ten_year.sumarize_comulative_return()
+​
+# Print summary statistics
+print(tbl_ten)
+count           500.000000
+mean              1.537014
+std               0.282192
+min               0.795263
+25%               1.339641
+50%               1.523799
+75%               1.693927
+max               2.451787
+95% CI Lower      1.049781
+95% CI Upper      2.159935
+Name: 2520, dtype: float64
+[35]:
+
+# Set initial investment
+initial_investment = 20000 *3
+# Use the lower and upper `95%` confidence intervals to calculate the range of the possible outcomes of our $60,000
+ci_lower_ten = round(tbl_ten[8] * initial_investment,2)
+ci_upper_ten = round(tbl_ten[9] * initial_investment,2)
+​
+# Print results
+print(f"There is a 95% chance that an initial investment of ${initial_investment} in the portfolio"
+      f" over the next 10 years will end within in the range of"
+      f" ${ci_lower_ten} and ${ci_upper_ten}")
+There is a 95% chance that an initial investment of $60000 in the portfolio over the next 10 years will end within in the range of $62986.85 and $129596.12
+[ ]:
+
+​
+
+
+
+
+
+
+
+
+
+
+
+
+Python 3 (ipykernel)
+
+
+
+
+
+
+
+GeoViews Demo
+Import the required libraries and dependencies
+[16]:
+
+Prepare the DataFrame
+[17]:
+
+Year	StateAbbr	StateDesc	CityName	PopulationCount	Latitude	Longitude
+0	2016	AL	Alabama	Birmingham	212237	33.527566	-86.798817
+2	2016	AL	Alabama	Birmingham	3042	33.579433	-86.722832
+3	2016	AL	Alabama	Birmingham	2735	33.542821	-86.752434
+4	2016	AL	Alabama	Birmingham	3338	33.563245	-86.764047
+5	2016	AL	Alabama	Birmingham	2864	33.544240	-86.774913
+Year	StateAbbr	StateDesc	CityName	PopulationCount	Latitude	Longitude
+809610	2015	WY	Wyoming	Cheyenne	3961	41.158506	-104.777632
+809611	2015	WY	Wyoming	Cheyenne	1913	41.171776	-104.788212
+809612	2015	WY	Wyoming	Cheyenne	3312	41.160374	-104.756561
+809613	2015	WY	Wyoming	Cheyenne	4518	41.150634	-104.755676
+809614	2015	WY	Wyoming	Cheyenne	214	41.133617	-104.719054
+[18]:
+
+Year	StateAbbr	StateDesc	CityName	PopulationCount	Latitude	Longitude
+483854	2016	NY	New York	Albany	2393	42.660364	-73.765214
+483858	2016	NY	New York	Albany	97856	42.666397	-73.798683
+483860	2016	NY	New York	Albany	2139	42.668922	-73.736313
+483861	2016	NY	New York	Albany	6046	42.664413	-73.751504
+483862	2016	NY	New York	Albany	5888	42.680903	-73.782682
+Year	StateAbbr	StateDesc	CityName	PopulationCount	Latitude	Longitude
+552713	2015	NY	New York	Yonkers	1687	40.932726	-73.854729
+552714	2015	NY	New York	Yonkers	3356	40.926716	-73.844803
+552715	2015	NY	New York	Yonkers	5397	40.919680	-73.850542
+552716	2015	NY	New York	Yonkers	2689	40.923546	-73.855661
+552717	2015	NY	New York	Yonkers	2947	40.927029	-73.861232
+[19]:
+
+[19]:
+CityName	PopulationCount	Latitude	Longitude
+483854	Albany	2393	42.660364	-73.765214
+483858	Albany	97856	42.666397	-73.798683
+483860	Albany	2139	42.668922	-73.736313
+483861	Albany	6046	42.664413	-73.751504
+483862	Albany	5888	42.680903	-73.782682
+[20]:
+
+[20]:
+CityName
+Albany            391424
+Buffalo          1045240
+Mount Vernon      269168
+New Rochelle      308248
+New York        32700532
+Rochester         842260
+Schenectady       264540
+Syracuse          580680
+Yonkers           783904
+Name: PopulationCount, dtype: int64
+Plot data
+[21]:
+
+---------------------------------------------------------------------------
+ModuleNotFoundError                       Traceback (most recent call last)
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    231     try:
+--> 232         import cartopy.crs as ccrs
+    233         import geoviews as gv # noqa
+
+ModuleNotFoundError: No module named 'cartopy'
+
+During handling of the above exception, another exception occurred:
+
+ImportError                               Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_1962/2422377133.py in <module>
+      1 # Plot the data using hvPlot and Geoviews
+----> 2 map_plot = ny_plot_df.hvplot.points(
+      3     'Longitude',
+      4     'Latitude',
+      5     geo=True,
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in points(self, x, y, **kwds)
+    520             The HoloViews representation of the plot.
+    521         """
+--> 522         return self(x, y, kind='points', **kwds)
+    523 
+    524     def vectorfield(self, x=None, y=None, angle=None, mag=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in __call__(self, x, y, kind, **kwds)
+     80                 return pn.panel(plot, **panel_dict)
+     81 
+---> 82         return self._get_converter(x, y, kind, **kwds)(kind, x, y)
+     83 
+     84     def _get_converter(self, x=None, y=None, kind=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in _get_converter(self, x, y, kind, **kwds)
+     87         y = y or params.pop('y', None)
+     88         kind = kind or params.pop('kind', None)
+---> 89         return HoloViewsConverter(
+     90             self._data, x, y, kind=kind, **params
+     91         )
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in __init__(self, data, x, y, kind, by, use_index, group_label, value_label, backlog, persist, use_dask, crs, fields, groupby, dynamic, grid, legend, rot, title, xlim, ylim, clim, symmetric, logx, logy, loglog, hover, subplots, label, invert, stacked, colorbar, datashade, rasterize, row, col, debug, framewise, aggregator, projection, global_extent, geo, precompute, flip_xaxis, flip_yaxis, dynspread, hover_cols, x_sampling, y_sampling, project, tools, attr_labels, coastline, tiles, sort_date, check_symmetric_max, transforms, stream, cnorm, features, rescale_discrete_levels, **kwds)
+    386         self.dynamic = dynamic
+    387         self.geo = any([geo, crs, global_extent, projection, project, coastline, features])
+--> 388         self.crs = self._process_crs(data, crs) if self.geo else None
+    389         self.project = project
+    390         self.coastline = coastline
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in _process_crs(self, data, crs)
+    628         _crs = getattr(data, 'attrs', {}).get(crs or 'crs', crs)
+    629         try:
+--> 630             return process_crs(_crs)
+    631         except ValueError:
+    632             # only raise error if crs was specified in kwargs
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    234         import pyproj
+    235     except ImportError:
+--> 236         raise ImportError('Geographic projection support requires GeoViews and cartopy.')
+    237 
+    238     if crs is None:
+
+ImportError: Geographic projection support requires GeoViews and cartopy.
+[ ]:
+
+[ ]:
+
+
+
+
+
+
+
+
+
+
+
+
+
+Python 3 (ipykernel)
+
+
+
+
+
+
+[1]:
+
+# Import the required libraries
+import pandas as pd
+from pathlib import Path
+import hvplot.pandas
+Prepare data
+[2]:
+
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 810047 entries, 0 to 810046
+Data columns (total 7 columns):
+ #   Column           Non-Null Count   Dtype  
+---  ------           --------------   -----  
+ 0   Year             810047 non-null  int64  
+ 1   StateAbbr        810047 non-null  object 
+ 2   StateDesc        810047 non-null  object 
+ 3   CityName         810047 non-null  object 
+ 4   PopulationCount  810047 non-null  int64  
+ 5   Latitude         810047 non-null  float64
+ 6   Longitude        810047 non-null  float64
+dtypes: float64(2), int64(2), object(3)
+memory usage: 43.3+ MB
+[3]:
+
+Year	StateAbbr	StateDesc	CityName	PopulationCount	Latitude	Longitude
+45546	2016	CA	California	Alameda	73812	37.765085	-122.266490
+45548	2016	CA	California	Alameda	3646	37.764563	-122.231170
+45549	2016	CA	California	Alameda	4107	37.775930	-122.247777
+45550	2016	CA	California	Alameda	4896	37.781192	-122.266079
+45551	2016	CA	California	Alameda	4722	37.777832	-122.283598
+Year	StateAbbr	StateDesc	CityName	PopulationCount	Latitude	Longitude
+201645	2016	CA	California	Whittier	1153	33.971944	-118.048356
+201646	2016	CA	California	Whittier	3394	33.948080	-118.015141
+201647	2016	CA	California	Whittier	6529	33.935604	-117.984645
+201648	2016	CA	California	Whittier	4273	33.941836	-118.000823
+201649	2016	CA	California	Whittier	1381	33.932823	-117.997121
+Plot data
+[4]:
+
+---------------------------------------------------------------------------
+ModuleNotFoundError                       Traceback (most recent call last)
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    231     try:
+--> 232         import cartopy.crs as ccrs
+    233         import geoviews as gv # noqa
+
+ModuleNotFoundError: No module named 'cartopy'
+
+During handling of the above exception, another exception occurred:
+
+ImportError                               Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_2103/368360258.py in <module>
+      1 # Plot data in a scatter plot using hvPlot with GeoViews enabled
+----> 2 california_population_data.hvplot.points(
+      3     'Longitude',
+      4     'Latitude',
+      5     geo=True,
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in points(self, x, y, **kwds)
+    520             The HoloViews representation of the plot.
+    521         """
+--> 522         return self(x, y, kind='points', **kwds)
+    523 
+    524     def vectorfield(self, x=None, y=None, angle=None, mag=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in __call__(self, x, y, kind, **kwds)
+     80                 return pn.panel(plot, **panel_dict)
+     81 
+---> 82         return self._get_converter(x, y, kind, **kwds)(kind, x, y)
+     83 
+     84     def _get_converter(self, x=None, y=None, kind=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in _get_converter(self, x, y, kind, **kwds)
+     87         y = y or params.pop('y', None)
+     88         kind = kind or params.pop('kind', None)
+---> 89         return HoloViewsConverter(
+     90             self._data, x, y, kind=kind, **params
+     91         )
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in __init__(self, data, x, y, kind, by, use_index, group_label, value_label, backlog, persist, use_dask, crs, fields, groupby, dynamic, grid, legend, rot, title, xlim, ylim, clim, symmetric, logx, logy, loglog, hover, subplots, label, invert, stacked, colorbar, datashade, rasterize, row, col, debug, framewise, aggregator, projection, global_extent, geo, precompute, flip_xaxis, flip_yaxis, dynspread, hover_cols, x_sampling, y_sampling, project, tools, attr_labels, coastline, tiles, sort_date, check_symmetric_max, transforms, stream, cnorm, features, rescale_discrete_levels, **kwds)
+    386         self.dynamic = dynamic
+    387         self.geo = any([geo, crs, global_extent, projection, project, coastline, features])
+--> 388         self.crs = self._process_crs(data, crs) if self.geo else None
+    389         self.project = project
+    390         self.coastline = coastline
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in _process_crs(self, data, crs)
+    628         _crs = getattr(data, 'attrs', {}).get(crs or 'crs', crs)
+    629         try:
+--> 630             return process_crs(_crs)
+    631         except ValueError:
+    632             # only raise error if crs was specified in kwargs
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    234         import pyproj
+    235     except ImportError:
+--> 236         raise ImportError('Geographic projection support requires GeoViews and cartopy.')
+    237 
+    238     if crs is None:
+
+ImportError: Geographic projection support requires GeoViews and cartopy.
+[ ]:
+
+
+
+
+
+
+
+
+
+
+
+
+
+Python 3 (ipykernel)
+
+
+
+
+
+
+
+Mapping Adventures
+It's time to take a break from your day job and plan an adventure!
+
+Use hvPlot and the GeoViews to create a series of geographical plots that will visualize each area of interest within the city.
+
+Import the required libraries and dependencies
+[5]:
+
+---------------------------------------------------------------------------
+ModuleNotFoundError                       Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_2279/2929948327.py in <module>
+      3 from pathlib import Path
+      4 import hvplot.pandas
+----> 5 import cartopy.crs as ccrs
+
+ModuleNotFoundError: No module named 'cartopy'
+Step 1: Read in the nyc_places_interest.csv file from the Resources folder into a Pandas DataFrame. Drop any rows that contain missing data or NaN values.
+[2]:
+
+[2]:
+Id	Longitude	Latitude	Name	PlaceType	Borough
+0	90	-73.888958	40.896210	Van Cortlandt Park	Park	Bronx
+1	95	-73.871651	40.889879	Woodlawn Cemetery	Cemetery	Bronx
+2	81	-73.838642	40.886965	Seton Falls Park	Park	Bronx
+3	69	-73.809802	40.877986	Pelham Bay Park	Park	Bronx
+4	8	-73.878308	40.864424	Botanical Garden	Garden	Bronx
+Plot the NYC Places of Interest
+Step 2: Plot All Places of Interest by Name
+[3]:
+
+[3]:
+Step 3: Plot All Places of Interest by Place Type
+[12]:
+
+[12]:
+Step 4: Plot All Places of Interest by Borough
+[9]:
+
+[9]:
+Step 5: Plot Parks of Interest
+[10]:
+
+[10]:
+Step 6: Plot Gardens of Interest
+[13]:
+
+[13]:
+Step 7: Plot Squares of Interest
+[14]:
+
+[14]:
+Step 8: Bonus - Pick two place of interest and plot them both on a the map
+[15]:
+
+[15]:
+
+
+
+
+
+
+
+
+
+
+
+
+Python 3 (ipykernel)
+
+
+
+
+
+
+
+Mapping Adventures
+It's time to take a break from your day job and plan an adventure!
+
+Use hvPlot and the GeoViews to create a series of geographical plots that will visualize each area of interest within the city.
+
+Import the required libraries and dependencies
+[14]:
+
+import pandas as pd
+import os
+from pathlib import Path
+import hvplot.pandas
+import cartopy.crs as ccrs
+import geoviews as gv # noqa
+import pyproj
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_2271/3086419686.py in <module>
+      4 import hvplot.pandas
+      5 import cartopy.crs as ccrs
+----> 6 import geoviews as gv # noqa
+      7 import pyproj
+
+/opt/anaconda3/lib/python3.9/site-packages/geoviews/__init__.py in <module>
+     11     pass
+     12 
+---> 13 from .annotators import annotate # noqa (API import)
+     14 from .element import ( # noqa (API import)
+     15     _Element, Feature, Tiles, WMTS, LineContours, FilledContours,
+
+/opt/anaconda3/lib/python3.9/site-packages/geoviews/annotators.py in <module>
+     12 from .element import Path
+     13 from .models.custom_tools import CheckpointTool, RestoreTool, ClearTool
+---> 14 from .links import VertexTableLink, PointTableLink, HvRectanglesTableLink, RectanglesTableLink
+     15 from .operation import project
+     16 from .streams import PolyVertexDraw, PolyVertexEdit
+
+/opt/anaconda3/lib/python3.9/site-packages/geoviews/links.py in <module>
+      2 
+      3 from holoviews.plotting.links import Link, RectanglesTableLink as HvRectanglesTableLink
+----> 4 from holoviews.plotting.bokeh.callbacks import (
+      5     LinkCallback, RectanglesTableLinkCallback as HvRectanglesTableLinkCallback
+      6 )
+
+ImportError: cannot import name 'LinkCallback' from 'holoviews.plotting.bokeh.callbacks' (/opt/anaconda3/lib/python3.9/site-packages/holoviews/plotting/bokeh/callbacks.py)
+Step 1: Read in the nyc_places_interest.csv file from the Resources folder into a Pandas DataFrame. Drop any rows that contain missing data or NaN values.
+[2]:
+
+# Read the the ny_places_interest.csv file into a DataFrame
+places_of_interest = pd.read_csv(
+    Path("../Resources/nyc_places_interest.csv")
+).dropna()
+​
+# Review the DataFrame
+places_of_interest.head()
+[2]:
+Id	Longitude	Latitude	Name	PlaceType	Borough
+0	90	-73.888958	40.896210	Van Cortlandt Park	Park	Bronx
+1	95	-73.871651	40.889879	Woodlawn Cemetery	Cemetery	Bronx
+2	81	-73.838642	40.886965	Seton Falls Park	Park	Bronx
+3	69	-73.809802	40.877986	Pelham Bay Park	Park	Bronx
+4	8	-73.878308	40.864424	Botanical Garden	Garden	Bronx
+Plot the NYC Places of Interest
+Step 2: Plot All Places of Interest by Name
+[3]:
+
+# Plot all of the NYC places of interest
+# Set the color parameter to Name
+# Set alpha to 0.8
+# Set tiles to 'OSM'
+# Set frame_width = 700
+# Set frame_height = 500
+​
+places_of_interest_by_name = places_of_interest.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+    geo=True, 
+---------------------------------------------------------------------------
+ModuleNotFoundError                       Traceback (most recent call last)
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    231     try:
+--> 232         import cartopy.crs as ccrs
+    233         import geoviews as gv # noqa
+
+ModuleNotFoundError: No module named 'cartopy'
+
+During handling of the above exception, another exception occurred:
+
+ImportError                               Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_2271/3327850087.py in <module>
+      6 # Set frame_height = 500
+      7 
+----> 8 places_of_interest_by_name = places_of_interest.hvplot.points(
+      9     'Longitude',
+     10     'Latitude',
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in points(self, x, y, **kwds)
+    520             The HoloViews representation of the plot.
+    521         """
+--> 522         return self(x, y, kind='points', **kwds)
+    523 
+    524     def vectorfield(self, x=None, y=None, angle=None, mag=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in __call__(self, x, y, kind, **kwds)
+     80                 return pn.panel(plot, **panel_dict)
+     81 
+---> 82         return self._get_converter(x, y, kind, **kwds)(kind, x, y)
+     83 
+     84     def _get_converter(self, x=None, y=None, kind=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in _get_converter(self, x, y, kind, **kwds)
+     87         y = y or params.pop('y', None)
+     88         kind = kind or params.pop('kind', None)
+---> 89         return HoloViewsConverter(
+     90             self._data, x, y, kind=kind, **params
+     91         )
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in __init__(self, data, x, y, kind, by, use_index, group_label, value_label, backlog, persist, use_dask, crs, fields, groupby, dynamic, grid, legend, rot, title, xlim, ylim, clim, symmetric, logx, logy, loglog, hover, subplots, label, invert, stacked, colorbar, datashade, rasterize, row, col, debug, framewise, aggregator, projection, global_extent, geo, precompute, flip_xaxis, flip_yaxis, dynspread, hover_cols, x_sampling, y_sampling, project, tools, attr_labels, coastline, tiles, sort_date, check_symmetric_max, transforms, stream, cnorm, features, rescale_discrete_levels, **kwds)
+    386         self.dynamic = dynamic
+    387         self.geo = any([geo, crs, global_extent, projection, project, coastline, features])
+--> 388         self.crs = self._process_crs(data, crs) if self.geo else None
+    389         self.project = project
+    390         self.coastline = coastline
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in _process_crs(self, data, crs)
+    628         _crs = getattr(data, 'attrs', {}).get(crs or 'crs', crs)
+    629         try:
+--> 630             return process_crs(_crs)
+    631         except ValueError:
+    632             # only raise error if crs was specified in kwargs
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    234         import pyproj
+    235     except ImportError:
+--> 236         raise ImportError('Geographic projection support requires GeoViews and cartopy.')
+    237 
+    238     if crs is None:
+
+ImportError: Geographic projection support requires GeoViews and cartopy.
+Step 3: Plot All Places of Interest by Place Type
+[12]:
+
+# Plot all of the NYC places of interest
+# Set the color parameter to PlaceType
+# Keep all other parameters the same as the previous plot
+​
+places_of_interest_by_type = places_of_interest.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+    geo=True, 
+    color='PlaceType',
+    alpha=0.8,
+    tiles='OSM',
+[12]:
+Step 4: Plot All Places of Interest by Borough
+[9]:
+
+# Plot all of the NYC places of interest
+# Set the color parameter to Borough
+# Keep all other parameters the same as the previous plot
+​
+places_of_interest_by_borough = places_of_interest.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+    geo=True, 
+    color='Borough',
+    alpha=0.8,
+    tiles='OSM',
+[9]:
+Step 5: Plot Parks of Interest
+[10]:
+
+# Create a DataFrame that slices the places_of_intereset DataFrame to include only parks
+parks = places_of_interest[places_of_interest["PlaceType"] == "Park"]
+​
+# Plot all of the parks in NYC
+# What column should color be set equal to?
+# Keep all other parameters the same as the previous plot
+​
+parks_of_interest = parks.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+    geo=True, 
+[10]:
+Step 6: Plot Gardens of Interest
+[13]:
+
+# Create a DataFrame that slices the places_of_intereset DataFrame to include only gardens
+gardens = places_of_interest[places_of_interest["PlaceType"] == "Garden"]
+​
+# Plot all of the gardens in NYC
+# Keep all other parameters the same as the previous plot
+​
+gardens_of_interest = gardens.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+    geo=True, 
+    color='Name',
+[13]:
+Step 7: Plot Squares of Interest
+[14]:
+
+# Create a DataFrame that slices the places_of_intereset DataFrame to include only squares
+squares = places_of_interest[places_of_interest["PlaceType"] == "Square"]
+​
+# Plot all of the gardens in NYC
+squares_of_interest = squares.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+    geo=True, 
+    color='Name',
+    alpha=0.8,
+    tiles='OSM',
+[14]:
+Step 8: Bonus - Pick two place of interest and plot them both on a the map
+[15]:
+
+# Slice the name of two places from the places_of_interest DataFrame
+# Use the Pandas isin function to reference the specific name of a location
+two_places = places_of_interest[(
+    places_of_interest["Name"].str.contains("Airport"))
+    | (places_of_interest["Name"].isin(["Aqueduct Race Track"])
+)]
+​
+# Create the Plot for just the two places
+two_places_route = two_places.hvplot.points(
+    'Longitude', 
+    'Latitude', 
+[15]:
+
+
+
+
+
+
+
+
+
+
+
+Python 3 (ipykernel)
+
+
+
+
+
+
+
+A Cartographers Expedition
+You and your friends have decided to tackle NYC old school! No cell phones or GPS devices allowed. Although everyone is a bit nervous, you realize that using an actual map might be pretty cool.
+
+Your goal is to generate a map that plots between five and six locations in the city. Use hvPlot and GeoViews to plot the route (point A to point B to point C) for the expedition.
+
+Import the required libraries and dependencies
+[1]:
+
+Step 1: Read in the nyc_excursion_plans.csv file into a Pandas DataFrame. Drop any rows that contain missing data or NaN values.
+[4]:
+
+[4]:
+Id	Longitude	Latitude	Name	PlaceType	Borough
+0	90	-73.888958	40.896210	Van Cortlandt Park	Park	Bronx
+1	95	-73.871651	40.889879	Woodlawn Cemetery	Cemetery	Bronx
+2	81	-73.838642	40.886965	Seton Falls Park	Park	Bronx
+3	69	-73.809802	40.877986	Pelham Bay Park	Park	Bronx
+4	8	-73.878308	40.864424	Botanical Garden	Garden	Bronx
+Step 2: Slice the DataFrame to include the arrival airport and first location. Plot the arriving airport and the first location.
+[7]:
+
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    230         import cartopy.crs as ccrs
+--> 231         import geoviews as gv # noqa
+    232         import pyproj
+
+/opt/anaconda3/lib/python3.9/site-packages/geoviews/__init__.py in <module>
+     12 
+---> 13 from .annotators import annotate # noqa (API import)
+     14 from .element import ( # noqa (API import)
+
+/opt/anaconda3/lib/python3.9/site-packages/geoviews/annotators.py in <module>
+     13 from .models.custom_tools import CheckpointTool, RestoreTool, ClearTool
+---> 14 from .links import VertexTableLink, PointTableLink, HvRectanglesTableLink, RectanglesTableLink
+     15 from .operation import project
+
+/opt/anaconda3/lib/python3.9/site-packages/geoviews/links.py in <module>
+      3 from holoviews.plotting.links import Link, RectanglesTableLink as HvRectanglesTableLink
+----> 4 from holoviews.plotting.bokeh.callbacks import (
+      5     LinkCallback, RectanglesTableLinkCallback as HvRectanglesTableLinkCallback
+
+ImportError: cannot import name 'LinkCallback' from 'holoviews.plotting.bokeh.callbacks' (/opt/anaconda3/lib/python3.9/site-packages/holoviews/plotting/bokeh/callbacks.py)
+
+During handling of the above exception, another exception occurred:
+
+ImportError                               Traceback (most recent call last)
+/var/folders/s8/wbyqhln976l7xpyxk66_vh0r0000gn/T/ipykernel_3777/2902607305.py in <module>
+      7 # Plot the arriving airport and the first location
+      8 # Set size = 300 to make the points easier to see on the map
+----> 9 first_route = arrival_and_first_location.hvplot.points(
+     10     'Longitude',
+     11     'Latitude',
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in points(self, x, y, **kwds)
+   1610         - HoloViews: https://holoviews.org/reference/elements/bokeh/Points.html
+   1611         """
+-> 1612         return self(x, y, kind="points", **kwds)
+   1613 
+   1614     def vectorfield(self, x=None, y=None, angle=None, mag=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in __call__(self, x, y, kind, **kwds)
+     90                 return pn.panel(plot, **panel_dict)
+     91 
+---> 92         return self._get_converter(x, y, kind, **kwds)(kind, x, y)
+     93 
+     94     def _get_converter(self, x=None, y=None, kind=None, **kwds):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/plotting/core.py in _get_converter(self, x, y, kind, **kwds)
+     97         y = y or params.pop("y", None)
+     98         kind = kind or params.pop("kind", None)
+---> 99         return HoloViewsConverter(self._data, x, y, kind=kind, **params)
+    100 
+    101     def __dir__(self):
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in __init__(self, data, x, y, kind, by, use_index, group_label, value_label, backlog, persist, use_dask, crs, fields, groupby, dynamic, grid, legend, rot, title, xlim, ylim, clim, symmetric, logx, logy, loglog, hover, subplots, label, invert, stacked, colorbar, datashade, rasterize, row, col, debug, framewise, aggregator, projection, global_extent, geo, precompute, flip_xaxis, flip_yaxis, dynspread, hover_cols, x_sampling, y_sampling, project, tools, attr_labels, coastline, tiles, sort_date, check_symmetric_max, transforms, stream, cnorm, features, rescale_discrete_levels, **kwds)
+    394         self.dynamic = dynamic
+    395         self.geo = any([geo, crs, global_extent, projection, project, coastline, features])
+--> 396         self.crs = self._process_crs(data, crs) if self.geo else None
+    397         self.project = project
+    398         self.coastline = coastline
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/converter.py in _process_crs(self, data, crs)
+    648 
+    649         try:
+--> 650             return process_crs(_crs)
+    651         except ValueError:
+    652             # only raise error if crs was specified in kwargs
+
+/opt/anaconda3/lib/python3.9/site-packages/hvplot/util.py in process_crs(crs)
+    232         import pyproj
+    233     except ImportError:
+--> 234         raise ImportError('Geographic projection support requires GeoViews, pyproj and cartopy.')
+    235 
+    236     if crs is None:
+
+ImportError: Geographic projection support requires GeoViews, pyproj and cartopy.
+Step 3: Plot the route between your first, second and third locations.
+[ ]:
+
+Step 4: Plot the route between your third, fourth, and fifth locations.
+[5]:
+
+[5]:
+Step 5: Plot all the stops in your excursion
+[6]:
+
+[6]:
+Question: Given the location of the stops on your excursion, what is the order in which you should visit them to get you back to the airport most efficiently?
+
+Answer: The most efficient visiting order is: Juniper Valley Park, Madison Square Garden, Ellis Island, Liberty Island, and finally Aqueduct Race Track, which is closest to the airport to ensure traffic does not prevent us from making the flight home!
+
+[ ]:
+
+Delimiter:
+
+financial-planner.ipynb
+geoviews_demo.ipynb
+mapping_adventures.ipynb
+mapping_adventures.ipynb
+nyc_excursion_plans.csv
+cartographers_expedition.ipynb
+hvplot_maps.ipynb
+
+Simple
+0
+6
+Python 3 (ipykernel) | Idle
