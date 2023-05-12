@@ -1,0 +1,231 @@
+A Whale off the Port(folio)
+
+In this assignment, you'll get to use what you've learned this week to evaluate the performance among various algorithmic, hedge, and mutual fund portfolios and compare them against the S&P 500 Index.
+
+
+# Initial imports
+import pandas as pd
+import numpy as np
+import datetime as dt
+from pathlib import Path
+
+
+
+
+
+
+# Drop nulls
+whale_returns_clean = whale_returns_df.dropna().copy()
+Algorithmic Daily Returns
+
+Read the algorithmic daily returns and clean the data
+
+
+
+# Reading algorithmic returns
+whale_returns_csv = Path("../Resources/whale_returns.csv)
+whale_returns_df = pd.read_csv(whale_returns_csv, index_col="Date", parse_dates=True, infer_datetime_format=True)
+
+
+# Count nulls
+whale_returns_nulls = whale_returns_df.isnull().sum()
+
+
+# Drop nulls
+whale_returns_clean = whale_returns_df.dropna().copy()
+S&P 500 Returns
+
+Read the S&P 500 historic closing prices and create a new daily returns DataFrame from the data.
+
+
+
+# Reading S&P 500 Closing Prices
+sp500_csv = Path("../Resources/sp500_history.csv")
+")
+sp500_df = pd.read_csv(sp500_csv, index_col="date", parse_dates=True, infer_datetime_format=True)
+
+
+# Check Data Types
+sp500_df.dtypes
+
+
+# Fix Data Types
+sp500_df["close"] = sp500_df["close"].str.replace("$", "")
+sp500_df["close"] = sp500_df["close"].astype("float")
+
+
+# Calculate Daily Returns
+sp500_df["daily_return"] = sp500_df["close"].pct_change()
+
+
+# Drop nulls
+sp500_df.dropna(inplace=True)
+
+
+# Rename `Close` Column to be specific to this portfolio.
+sp500_df.rename(columns={"close": "sp500_close"}, inplace=True)
+​Combine Whale, Algorithmic, and S&P 500 Returns
+
+
+# Join Whale Returns, Algorithmic Returns, and the S&P 500 Returns into a single DataFrame with columns for each portfolio's returns.
+all_returns = pd.concat([whale_returns_df, algo_returns_df, sp500_returns_df], axis="columns", join="inner")
+
+# Plot daily returns of all portfolios
+ returns_df.plot(figsize=(15,8))
+    
+plt.xlabel("Date")
+plt.ylabel("Daily Return")
+plt.title("Daily Returns of All Portfolios")
+plt.show()
+Calculate and Plot cumulative returns.
+
+
+# Calculate cumulative returns of all portfolios
+cumulative_returns = (1 + returns_df).cumprod() - 1
+# Plot cumulative returns
+cumulative_returns.plot(figsize=(15,8))
+plt.xlabel("Date")
+plt.ylabel("Cumulative Return")
+plt.title("Cumulative Returns of All Portfolios")
+
+plt.show()
+
+
+
+
+# Box plot to visually show risk
+plt.figure(figsize=(12,8))
+whale_returns_df.plot(kind='box', ax=plt.gca(), flierprops=dict(marker='.', markersize=3))
+
+# Calculate the daily standard deviations of all portfolios
+daily_std = daily_returns.std()
+
+
+
+# Calculate  the daily standard deviation of S&P 500
+sp500_csv = Path("../Resources/sp500_history.csv")
+sp500_df = pd.read_csv(sp500_csv, index_col="date", parse_dates=True, infer_datetime_format=True)
+sp500_df.dropna(inplace=True)
+sp500_returns = sp500_df['close'].pct_change()
+sp500_std = sp500_returns.std()
+# Determine which portfolios are riskier than the S&P 500
+riskier_portfolios = daily_returns.columns[daily_returns.std() > sp500_std]
+
+
+
+# Calculate the annualized standard deviation (252 trading days)
+nualized_std = daily_returns.std() * np.sqrt(252)
+
+
+# Calculate the rolling standard deviation for all portfolios using a 21-day window
+rolling_std = daily_returns.rolling(window=21).std()
+# Plot the rolling standard deviation
+rolling_std.plot(figsize=(12, 8), title="Rolling 21-Day Standard Deviation for All Portfolios")
+# Show plot
+plt.show()
+Calculate and plot the correlation
+
+
+# Calculate the correlation
+correlation = daily_returns.corr()
+
+# Display de correlation matrix
+
+fig, ax = plt.subplots(figsize=(10, 8))
+im = ax.imshow(correlation, cmap='coolwarm')
+# Calculate covariance of a single portfolio
+covariance = daily_returns['APPLE INC'].cov(daily_returns['S&P 500'])
+
+# Calculate variance of S&P 500
+variance = daily_returns['S&P 500'].var()
+
+# Compute beta
+beta = covariance / variance
+# Plot beta trend
+fig, ax = plt.subplots(figsize=(10, 8))
+# Plot beta trend
+rolling_covariance = daily_returns['BERKSHIRE HATHAWAY INC'].rolling(window=30).cov(daily_returns['S&P 500'])
+rolling_variance = daily_returns['S&P 500'].rolling(window=30).var()
+rolling_beta = rolling_covariance / rolling_variance
+
+
+
+# Use `ewm` to calculate the rolling window
+ewm_returns = whale_returns_clean.ewm(halflife=21).mean()
+
+
+
+# Annualized Sharpe Ratios
+annualized_sharpe_ratio = (average_daily_return * np.sqrt(252)) / daily_standard_deviation
+
+# Visualize the sharpe ratios as a bar plot
+annualized_sharpe_ratio.plot(kind="bar", title="Annualized Sharpe Ratios", figsize=(10,5))
+Determine whether the algorithmic strategies outperform both the market (S&P 500) and the whales portfolios.
+
+
+
+# Reading data from 1st stock
+stock_data_df = pd.read_csv(stock_data_csv, index_col="Date", parse_dates=True, infer_datetime_format=True)
+
+
+# Reading data from 2nd stock
+stock2_data_df = pd.read_csv(stock2_data_csv, index_col="Date", parse_dates=True, infer_datetime_format=True)
+
+
+# Reading data from 3rd stock
+​
+[ ]:
+
+# Combine all stocks in a single DataFrame
+​
+[ ]:
+
+# Reset Date index
+​
+[ ]:
+
+# Reorganize portfolio data by having a column per symbol
+​
+[ ]:
+
+# Calculate daily returns
+​
+# Drop NAs
+​
+# Display sample data
+​
+Calculate the weighted returns for the portfolio assuming an equal number of shares for each stock
+
+
+# Set weights
+weights = [1/3, 1/3, 1/3]
+# Calculate portfolio return
+portfolio_returns = (stock1_data_df.pct_change() * weights[0] +
+                     stock2_data_df.pct_change() * weights[1] +
+                     stock3_data_df.pct_change() * weights[2])
+
+# Display sample data
+portfolio_returns.head()
+
+
+
+# Join your returns DataFrame to the original returns DataFrame
+all_returns = pd.concat([portfolio_returns, whale_returns_clean, algo_returns_clean, sp500_returns], axis="columns", join="inner")
+
+# Only compare dates where return data exists for all the stocks (drop NaNs)
+
+all_returns.dropna(inplace=True)
+Re-run the risk analysis with your portfolio to see how it compares to the others
+Calculate the Annualized Standard Deviation
+
+
+# Calculate the annualized `std`
+all_returns_std_annualized = all_returns.std() * np.sqrt(252)
+Calculate and plot rolling std with 21-day window
+
+
+# Calculate rolling standard deviation
+all_returns_rolling_std = all_returns.rolling(window=21).std()
+
+
+
