@@ -1,0 +1,53 @@
+# Initial imports
+import pandas as pd
+import calendar
+import hvplot.pandas
+from sqlalchemy import create_engine
+
+
+# Create a connection to the database
+engine = create_engine("postgresql://postgres:postgres@localhost:5432/fraud_detection")
+
+# loading data for card holder 2 and 18 from the database
+# Write the query
+query = """
+        SELECT *
+        FROM transactions
+        WHERE cardholder IN (2, 18)
+        """
+
+# Create a DataFrame from the query result. HINT: Use pd.read_sql(query, engine)
+f = pd.read_sql(query, engine)
+# Plot for cardholder 2
+df_cardholder2 = df[df['cardholder'] == 2]
+df_cardholder2['date'] = pd.to_datetime(df_cardholder2['date'])
+df_cardholder2.hvplot.line(x='date', y='amount', title='Transaction Trend - Card Holder 2')
+
+# Plot for cardholder 18
+df_cardholder18 = df[df['cardholder'] == 18]
+df_cardholder18['date'] = pd.to_datetime(df_cardholder18['date'])
+df_cardholder18.hvplot.line(x='date', y='amount', title='Transaction Trend - Card Holder 18')
+
+
+# Combined plot for card holders 2 and 18
+df_combined = pd.concat([df_cardholder2, df_cardholder18])
+df_combined['date'] = pd.to_datetime(df_combined['date'])
+df_combined.hvplot.line(x='date', y='amount', by='cardholder', title='Transaction Trend - Card Holders 2 and 18')
+
+# loading data of daily transactions from jan to jun 2018 for card holder 25
+
+# Write the query
+query = """
+        SELECT date, amount
+        FROM transactions
+        WHERE cardholder = 25 AND date >= '2018-01-01' AND date <= '2018-06-30'
+        ORDER BY date
+        """
+# Create a DataFrame from the query result. HINT: Use pd.read_sql(query, engine)
+df_cardholder25 = pd.read_sql(query, engine)
+
+# loop to change the numeric month to month names
+df_cardholder25['month'] = df_cardholder25['date'].dt.month.map(lambda x: calendar.month_name[x])
+
+# Creating the six box plots using hvPlot
+box_plots = df_monthly_total.hvplot.box(x='month', y='amount', width=800, height=400, xlabel='Month', ylabel='Transaction Amount', title='Monthly Transaction Amount Box Plots')
